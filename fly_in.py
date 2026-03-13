@@ -7,12 +7,19 @@ except ImportError:
     sys.exit(1)
 
 from src.parse.validation import validation_data
+from src.models.Zones import ManagerZone
+mng = ManagerZone()
 
 
 def main() -> None:
+    if len(sys.argv) != 2:
+        sys.stderr.write("[ERROR] You need config.txt \n")
+        sys.exit(1)
     try:
         data = validation_data(sys.argv[1])
-        print(data)
+        mng._append_zones_drons_connections(data)
+        for es in mng.zones:
+            print(es.name)
     except ValueError as e:
         sys.stderr.write(f"{e}\n")
         sys.exit(1)

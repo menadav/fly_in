@@ -1,5 +1,5 @@
 from typing import List
-from src.parse.zone import check_zone, ZoneHub, ZoneConnection, dron_nb
+from src.models.ZoneConfig import ZoneHub, ZoneConnection, DronData
 
 
 def validation_data(file_path: str) -> List:
@@ -40,3 +40,75 @@ def validation_data(file_path: str) -> List:
         raise ValueError("[ERROR] File not found")
     except Exception as e:
         raise ValueError(f"[ERROR] {e}")
+
+
+def check_zone(zones: List[int | DronData]) -> None:
+    count_start = 0
+    count_end = 0
+    list_name = []
+    name1_name2 = []
+    coords_seen = set()
+    data_zone = ["start_hub", "end_hub", "hub"]
+    for data in zones:
+        if isinstance(data, int):
+            continue
+        if data.type in data_zone:
+            current_pos = (data.x, data.y)
+            if current_pos in coords_seen:
+                raise ValueError(
+                    f"[ERROR] Collision: Multiple hubs at {current_pos}"
+                    )
+            coords_seen.add(current_pos)
+        if data.type == "start_hub":
+            check_space(data.name)
+            list_name.append(data.name)
+            count_start += 1
+            if count_start != 1:
+                raise ValueError("[ERROR] start_hub")
+        elif data.type == "end_hub":
+            check_space(data.name)
+            list_name.append(data.name)
+            count_end += 1
+            if count_end != 1:
+                raise ValueError("[ERROR] end_hub")
+        elif data.type == "hub":
+            if data.name not in list_name:
+                check_space(data.name)
+                list_name.append(data.name)
+            else:
+                raise ValueError("[ERROR] Name is repit")
+            continue
+        elif data.type == "connection":
+            nam1_nam2 = data.name1, data.name2
+            nam2_nam1 = data.name2, data.name1
+            if nam1_nam2 in name1_name2 \
+                    or data.name1 == data.name2 or nam2_nam1 in name1_name2:
+                raise ValueError("[ERROR] Connection is repit")
+            else:
+                name1_name2.append(nam1_nam2)
+            continue
+        else:
+            raise ValueError("[ERROR] Type is different")
+    if count_start != 1:
+        raise ValueError("[ERROR] Need start_hub")
+    elif count_end != 1:
+        raise ValueError("[ERROR] Need end_hub")
+    for name1, name2 in name1_name2:
+        if name1 not in list_name or name2 not in list_name:
+            raise ValueError("[ERROR] Names_hub not it in connections")
+
+
+def check_space(line: str) -> None:
+    if " " in line:
+        raise ValueError("[ERROR] Name have space")
+    if "-" in line:
+        raise ValueError("[ERROR] Name have '-'")
+
+
+def dron_nb(line: str) -> int:
+    try:
+        parts = line.split(":", 1)
+        number = int(parts[1])
+        return number
+    except ValueError:
+        raise ValueError("[ERROR] Need value for nb drons")
