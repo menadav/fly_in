@@ -109,6 +109,8 @@ def dron_nb(line: str) -> int:
     try:
         parts = line.split(":", 1)
         number = int(parts[1])
+        if number < 0:
+            raise ValueError("[ERROR] Need positiv Drons")
         return number
     except ValueError:
         raise ValueError("[ERROR] Need value for nb drons")

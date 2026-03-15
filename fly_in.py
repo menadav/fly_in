@@ -24,7 +24,7 @@ def main() -> None:
         sys.exit(1)
     fly_data = FlyinData()
     fly_data._append_zones_drons_connections(data)
-
+    print(fly_data.zones_dict)
 
 
 if __name__ == "__main__":

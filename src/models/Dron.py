@@ -1,3 +1,5 @@
 class Dron:
-    def __init__(self, id: int) -> None:
-        self.id = id
+    def __init__(self, id_nb: int) -> None:
+        self.id = id_nb
+        self.path = []
+        self.movement = True
