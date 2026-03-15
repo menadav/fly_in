@@ -31,12 +31,18 @@ class NormalZone(Zone):
 
 
 class StartZone(NormalZone):
+    def __init__(self, name, x_y, color, max_drones) -> None:
+        super().__init__(name, x_y, color, max_drones)
+        self.role = "START"
 
     def has_capacity(self) -> bool:
         return True
 
 
 class EndZone(NormalZone):
+    def __init__(self, name, x_y, color, max_drones) -> None:
+        super().__init__(name, x_y, color, max_drones)
+        self.role = "END"
 
     def has_capacity(self) -> bool:
         return True
@@ -61,6 +67,10 @@ class RestrictedZone(Zone):
 
 
 class BlockedZone(Zone):
+    def __init__(self, name, x_y, color, max_drones) -> None:
+        super().__init__(name, x_y, color, max_drones)
+        self.role = "BLOCKED"
+
     def get_movement_cost(self) -> int:
         return float('inf')
 

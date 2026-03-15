@@ -8,7 +8,7 @@ class FlyinData:
         self.zones = []
         self.drons = []
         self.connections = []
-        self.zones_dict = {}
+        self.map_zones = {}
 
     def _create_drons(self, id_n: int) -> Dron:
         return Dron(id_n)
@@ -47,7 +47,14 @@ class FlyinData:
             if hasattr(item, 'x'):
                 new_zone = self._select_zone(item)
                 self.zones.append(new_zone)
-                self.zones_dict[item.name] = new_zone
+                self.map_zones[item.name] = new_zone
             if hasattr(item, 'max_link_capacity'):
                 new_connection = self._select_connection(item)
                 self.connections.append(new_connection)
+        for zone in self.zones:
+            for connect in self.connections:
+                x, y = connect.nodes
+                if x == zone.name:
+                    zone.neighbor.append(y)
+                if y == zone.name:
+                    zone.neighbor.append(x)

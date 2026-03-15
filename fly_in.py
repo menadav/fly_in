@@ -8,24 +8,25 @@ except ImportError:
 
 from src.parse.validation import validation_data
 from src.models.FlyinData import FlyinData
-
+from src.algo.bfs_algo import check_bfs
 
 def main() -> None:
     if len(sys.argv) != 2:
-        sys.stderr.write("[ERROR] You need config.txt \n")
+        print("[ERROR] You need config.txt \n", file=sys.stderr)
         sys.exit(1)
     try:
         data = validation_data(sys.argv[1])
     except ValueError as e:
-        sys.stderr.write(f"{e}\n")
+        print(f"{e}\n", file=sys.stderr)
         sys.exit(1)
     except ValidationError as e:
-        sys.stderr.write(f"{e}\n")
+        print(f"{e}\n", file=sys.stderr)
         sys.exit(1)
     fly_data = FlyinData()
     fly_data._append_zones_drons_connections(data)
-    print(fly_data.zones_dict)
-
+    if check_bfs(fly_data.map_zones) == False:
+        print("[ERROR] No path found \n", file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

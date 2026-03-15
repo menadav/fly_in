@@ -1,6 +1,8 @@
-nb_drones: 5
+#Mirar metadata no sea Zone Blockeada!?
+#Parsear Mejor los Exceptions
 
-start_hub: hub 0 0 [zone=restricted color=red]
+nb_drones: 5
+start_hub: hub 0 0 [color=green]
 end_hub: goal 1 10 [color=yellow]
 
 hub: roof1 3 4 [zone=restricted color=red]
@@ -12,5 +14,4 @@ hub: obstacleX 5 5 [zone=blocked color=gray]
 connection: hub-roof1
 connection: hub-corridorA
 connection: roof1-roof2
-connection: corridorA-tunnelB [max_link_capacity=2]
 connection: tunnelB-goal
