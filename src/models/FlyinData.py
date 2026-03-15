@@ -1,24 +1,22 @@
 from typing import Any
 from src.models.ClassZone import NormalZone, PriorityZone, RestrictedZone, BlockedZone, StartZone, EndZone
 from src.models.Dron import Dron
+from src.models.Connections import Connection
 
-
-class ManagerZone:
+class FlyinData:
     def __init__(self) -> None:
         self.zones = []
         self.drons = []
         self.connections = []
         self.zones_dict = {}
 
-    def _append_zones_drons_connections(self, data) -> None:
-        for i in range(data[0]):
-            dron = self._create_drons(i)
-            self.drons.append(dron)
-        for item in data:
-            if hasattr(item, 'x'):
-                nueva_zona = self._select_zone(item)
-                self.zones.append(nueva_zona)
-                self.zones_dict[item.name] = nueva_zona
+    def _create_drons(self, id_n: int) -> Dron:
+        return Dron(id_n)
+
+
+    def _select_connection(self, tunnel):
+        return Connection(tunnel.name1, tunnel.name2, tunnel.max_link_capacity)
+
 
     def _select_zone(self, hub_data):
         params = {
@@ -40,5 +38,16 @@ class ManagerZone:
             return BlockedZone(**params)
         return NormalZone(**params)
 
-    def _create_drons(self, id: int) -> Dron:
-        return Dron(id)
+
+    def _append_zones_drons_connections(self, data) -> None:
+        for i in range(data[0]):
+            dron = self._create_drons(i)
+            self.drons.append(dron)
+        for item in data:
+            if hasattr(item, 'x'):
+                new_zone = self._select_zone(item)
+                self.zones.append(new_zone)
+                self.zones_dict[item.name] = new_zone
+            if hasattr(item, 'max_link_capacity'):
+                new_connection = self._select_connection(item)
+                self.connections.append(new_connection)

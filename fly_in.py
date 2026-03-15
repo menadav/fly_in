@@ -7,8 +7,7 @@ except ImportError:
     sys.exit(1)
 
 from src.parse.validation import validation_data
-from src.models.Zones import ManagerZone
-mng = ManagerZone()
+from src.models.FlyinData import FlyinData
 
 
 def main() -> None:
@@ -17,15 +16,15 @@ def main() -> None:
         sys.exit(1)
     try:
         data = validation_data(sys.argv[1])
-        mng._append_zones_drons_connections(data)
-        for es in mng.zones:
-            print(es.name)
     except ValueError as e:
         sys.stderr.write(f"{e}\n")
         sys.exit(1)
     except ValidationError as e:
         sys.stderr.write(f"{e}\n")
         sys.exit(1)
+    fly_data = FlyinData()
+    fly_data._append_zones_drons_connections(data)
+
 
 
 if __name__ == "__main__":
