@@ -1,7 +1,8 @@
-from typing import Any
-from src.models.ClassZone import NormalZone, PriorityZone, RestrictedZone, BlockedZone, StartZone, EndZone
+from src.models.ClassZone import NormalZone, PriorityZone, \
+      RestrictedZone, BlockedZone, StartZone, EndZone
 from src.models.Dron import Dron
 from src.models.Connections import Connection
+
 
 class FlyinData:
     def __init__(self) -> None:
@@ -13,10 +14,8 @@ class FlyinData:
     def _create_drons(self, id_n: int) -> Dron:
         return Dron(id_n)
 
-
     def _select_connection(self, tunnel):
         return Connection(tunnel.name1, tunnel.name2, tunnel.max_link_capacity)
-
 
     def _select_zone(self, hub_data):
         params = {
@@ -29,7 +28,8 @@ class FlyinData:
             return StartZone(**params)
         if hub_data.type == 'end_hub':
             return EndZone(**params)
-        z_type = hub_data.zone.value if hasattr(hub_data.zone, 'value') else hub_data.zone
+        z_type = hub_data.zone.value if hasattr(hub_data.zone, 'value')\
+            else hub_data.zone
         if z_type == 'priority':
             return PriorityZone(**params)
         elif z_type == 'restricted':
@@ -37,7 +37,6 @@ class FlyinData:
         elif z_type == 'blocked':
             return BlockedZone(**params)
         return NormalZone(**params)
-
 
     def _append_zones_drons_connections(self, data) -> None:
         for i in range(data[0]):
@@ -58,3 +57,9 @@ class FlyinData:
                     zone.neighbor.append(y)
                 if y == zone.name:
                     zone.neighbor.append(x)
+        for zone in self.zones:
+            for connect in self.connections:
+                if zone.name in connect.nodes and\
+                        any(check in connect.nodes for check in zone.neighbor):
+                    zone.connections.append(connect)
+

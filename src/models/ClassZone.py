@@ -9,6 +9,7 @@ class Zone(ABC):
         self.x_y = x_y
         self.color = color
         self.max_drones = max_drones
+        self.connections = []
         self.neighbor = []
         self.current_drones = []
 

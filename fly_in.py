@@ -3,12 +3,12 @@ import sys
 try:
     from pydantic import ValidationError
 except ImportError:
-    sys.stderr.write("[ERROR] Install Dependencies")
+    print("[ERROR] Install Dependencies \n", file=sys.stderr)
     sys.exit(1)
-
 from src.parse.validation import validation_data
 from src.models.FlyinData import FlyinData
 from src.algo.bfs_algo import check_bfs
+
 
 def main() -> None:
     if len(sys.argv) != 2:
@@ -24,9 +24,15 @@ def main() -> None:
         sys.exit(1)
     fly_data = FlyinData()
     fly_data._append_zones_drons_connections(data)
-    if check_bfs(fly_data.map_zones) == False:
+    if check_bfs(fly_data.map_zones) is False:
         print("[ERROR] No path found \n", file=sys.stderr)
         sys.exit(1)
+    for zone in fly_data.zones:
+        print("1\n")
+        print(zone.name)
+        for connect in zone.connections:
+            print(connect.nodes)
+
 
 if __name__ == "__main__":
     main()
