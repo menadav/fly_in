@@ -27,12 +27,7 @@ def main() -> None:
     if check_bfs(fly_data.map_zones) is False:
         print("[ERROR] No path found \n", file=sys.stderr)
         sys.exit(1)
-    for zone in fly_data.zones:
-        print("1\n")
-        print(zone.name)
-        for connect in zone.connections:
-            print(connect.nodes)
-
+    
 
 if __name__ == "__main__":
     main()
