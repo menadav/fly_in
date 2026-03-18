@@ -9,7 +9,12 @@ def check_bfs(map_zone: dict[str, Zone]) -> bool:
         current_zone = queue.pop(0)
         if current_zone == end_zone:
             return True
-        for conn in current_zone.neighbor:
+        for conn in current_zone.connection:
+            x , y = conn.nodes
+            if not current_zone.name == x:
+                conn = x
+            else:
+                conn = y
             if conn in map_zone:
                 neighbor = map_zone[conn]
                 role = getattr(neighbor, 'role', 'NORMAL')

@@ -9,8 +9,7 @@ class Zone(ABC):
         self.x_y = x_y
         self.color = color
         self.max_drones = max_drones
-        self.connections = []
-        self.neighbor = []
+        self.connection = []
         self.current_drones = []
 
     @abstractmethod
@@ -52,7 +51,7 @@ class EndZone(NormalZone):
 class PriorityZone(Zone):
 
     def get_movement_cost(self) -> int:
-        return 1
+        return 0.5
 
     def has_capacity(self) -> bool:
         return len(self.current_drones) < self.max_drones

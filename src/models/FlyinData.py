@@ -52,14 +52,6 @@ class FlyinData:
                 self.connections.append(new_connection)
         for zone in self.zones:
             for connect in self.connections:
-                x, y = connect.nodes
-                if x == zone.name:
-                    zone.neighbor.append(y)
-                if y == zone.name:
-                    zone.neighbor.append(x)
-        for zone in self.zones:
-            for connect in self.connections:
-                if zone.name in connect.nodes and\
-                        any(check in connect.nodes for check in zone.neighbor):
-                    zone.connections.append(connect)
-
+                if zone.name in connect.nodes:
+                    if connect not in zone.connection:
+                        zone.connection.append(connect)
