@@ -17,6 +17,18 @@ class HubColor(Enum):
     GREEN = "green"
     YELLOW = "yellow"
     ORANGE = "orange"
+    CYAN = "cyan"
+    PURPLE = "purple"
+    BROWN = "brown"
+    LIME = "lime"
+    MAGENTA = "magenta"
+    GOLD = "gold"
+    BLACK = "black"
+    MAROON = "maroon"
+    DARKRED = "darkred"
+    VIOLET = "violet"
+    CRIMSON = "crimson"
+    RAINBOW = "rainbow"
 
 class ZoneType(Enum):
     NORMAL = "normal"
