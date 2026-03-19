@@ -28,8 +28,7 @@ def main() -> None:
         print("[ERROR] No path found \n", file=sys.stderr)
         sys.exit(1)
     algo = Algorithm(fly_data)
-    way = algo.process_algo()
-    for zone in way:
-        print(zone.name)
+    algo.simulation_fly()
+
 if __name__ == "__main__":
     main()

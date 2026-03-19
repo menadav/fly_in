@@ -19,6 +19,7 @@ class FlyinData:
 
     def _select_zone(self, hub_data):
         params = {
+            "typ": hub_data.zone,
             "name": hub_data.name,
             "x_y": (hub_data.x, hub_data.y),
             "color": hub_data.color,
@@ -38,6 +39,15 @@ class FlyinData:
             return BlockedZone(**params)
         return NormalZone(**params)
 
+    def get_connection(self, zone_a, zone_b):
+        if not zone_a or not zone_b:
+            return None
+        for conn in zone_a.connection:
+            nombres_en_conexion = [node.name if hasattr(node, 'name') else node for node in conn.nodes]
+            if zone_b.name in nombres_en_conexion:
+                return conn
+                
+        return None
     def _append_zones_drons_connections(self, data) -> None:
         for i in range(data[0]):
             dron = self._create_drons(i)

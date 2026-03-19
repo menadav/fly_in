@@ -16,7 +16,7 @@ class HubColor(Enum):
     GRAY = "gray"
     GREEN = "green"
     YELLOW = "yellow"
-
+    ORANGE = "orange"
 
 class ZoneType(Enum):
     NORMAL = "normal"
@@ -36,8 +36,8 @@ class DronData(ABC, BaseModel):
 
 class ZoneHub(DronData):
     name: str
-    x: int = Field(ge=0)
-    y: int = Field(ge=0)
+    x: int
+    y: int
     zone: ZoneType = Field(default=ZoneType.NORMAL)
     color: HubColor = Field(default=HubColor.NONE)
     max_drones: int = Field(default=1, gt=0)
@@ -51,7 +51,7 @@ class ZoneHub(DronData):
             metadata = re.findall(r"\[(.*)\]", rest)
             if len(metadata) > 1:
                 raise ValueError("[ERROR] There are 2 or more Metadatas")
-            clean_rest = re.sub(r"\[(.*)]", " ", rest).strip()
+            clean_rest = re.sub(r"\[(.*)]", "", rest).strip()
             name_x_y = clean_rest.split()
             if len(name_x_y) != 3:
                 raise ValueError("[ERROR] Arguments are missing.")
@@ -59,7 +59,7 @@ class ZoneHub(DronData):
                 "type": z_type,
                 "name": name_x_y[0],
                 "x": name_x_y[1],
-                "y": name_x_y[1]
+                "y": name_x_y[2]
             }
             if metadata:
                 metadata_str = metadata[0]
@@ -114,7 +114,7 @@ class ZoneConnection(DronData):
             metadata = re.findall(r"\[(.*)\]", rest)
             if len(metadata) > 1:
                 raise ValueError("[ERROR] There are 2 or more Metadatas")
-            clean_rest = re.sub(r"\[(.*)]", " ", rest).strip()
+            clean_rest = re.sub(r"\[(.*)]", "", rest).strip()
             names = clean_rest.split('-')
             if len(names) != 2:
                 raise ValueError("[ERROR] Incorrect number names.")

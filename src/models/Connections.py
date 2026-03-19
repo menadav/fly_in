@@ -13,7 +13,3 @@ class Connection:
             return True
         else:
             return False
-
-    def release(self) -> None:
-        if self.current_usage > 0:
-            self.current_usage -= 1

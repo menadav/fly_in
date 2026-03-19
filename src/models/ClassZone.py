@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-
+from src.models.ZoneConfig import ZoneType
 
 class Zone(ABC):
     def __init__(
-            self, name: str, x_y: tuple[int, int], color: str, max_drones: int
+            self, typ: ZoneType, name: str, x_y: tuple[int, int], color: str, max_drones: int
             ) -> None:
+        self.typ = typ
         self.name = name
         self.x_y = x_y
         self.color = color
@@ -31,8 +32,8 @@ class NormalZone(Zone):
 
 
 class StartZone(NormalZone):
-    def __init__(self, name, x_y, color, max_drones) -> None:
-        super().__init__(name, x_y, color, max_drones)
+    def __init__(self, typ, name: str, x_y: tuple[int, int], color: str, max_drones: int) -> None:
+        super().__init__(typ, name, x_y, color, max_drones)
         self.role = "START"
 
     def has_capacity(self) -> bool:
@@ -40,8 +41,8 @@ class StartZone(NormalZone):
 
 
 class EndZone(NormalZone):
-    def __init__(self, name, x_y, color, max_drones) -> None:
-        super().__init__(name, x_y, color, max_drones)
+    def __init__(self, typ, name: str, x_y: tuple[int, int], color: str, max_drones: int) -> None:
+        super().__init__(typ, name, x_y, color, max_drones)
         self.role = "END"
 
     def has_capacity(self) -> bool:
@@ -51,7 +52,7 @@ class EndZone(NormalZone):
 class PriorityZone(Zone):
 
     def get_movement_cost(self) -> int:
-        return 0.5
+        return 1
 
     def has_capacity(self) -> bool:
         return len(self.current_drones) < self.max_drones
@@ -67,9 +68,6 @@ class RestrictedZone(Zone):
 
 
 class BlockedZone(Zone):
-    def __init__(self, name, x_y, color, max_drones) -> None:
-        super().__init__(name, x_y, color, max_drones)
-        self.role = "BLOCKED"
 
     def get_movement_cost(self) -> int:
         return float('inf')
