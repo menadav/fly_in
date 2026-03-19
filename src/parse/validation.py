@@ -100,17 +100,17 @@ def check_zone(zones: List[int | DronData]) -> None:
 
 def check_space(line: str) -> None:
     if " " in line:
-        raise ValueError("[ERROR] Name have space")
+        raise ValueError("[ERROR] Name have space {line}")
     if "-" in line:
-        raise ValueError("[ERROR] Name have '-'")
+        raise ValueError("[ERROR] Name have '-' {line}")
 
 
 def dron_nb(line: str) -> int:
-    try:
+    try: 
         parts = line.split(":", 1)
         number = int(parts[1])
         if number <= 0:
-            raise ValueError("[ERROR] Need positiv Drons")
+            raise ValueError("[ERROR] Need positiv Drons {line}")
         return number
     except ValueError:
-        raise ValueError("[ERROR] Need value for nb drons")
+        raise ValueError("[ERROR] Need value for nb drons {line}")
