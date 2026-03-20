@@ -46,8 +46,8 @@ class FlyinData:
             nombres_en_conexion = [node.name if hasattr(node, 'name') else node for node in conn.nodes]
             if zone_b.name in nombres_en_conexion:
                 return conn
-                
         return None
+
     def _append_zones_drons_connections(self, data) -> None:
         for i in range(data[0]):
             dron = self._create_drons(i)

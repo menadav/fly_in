@@ -10,6 +10,7 @@ from src.models.FlyinData import FlyinData
 from src.algo.bfs_algo import check_bfs
 from src.algo.dijks_algo import Algorithm
 
+
 def main() -> None:
     if len(sys.argv) != 2:
         print("[ERROR] You need config.txt \n", file=sys.stderr)
@@ -29,6 +30,7 @@ def main() -> None:
         sys.exit(1)
     algo = Algorithm(fly_data)
     algo.simulation_fly()
+
 
 if __name__ == "__main__":
     main()
