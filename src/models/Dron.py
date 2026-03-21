@@ -3,23 +3,28 @@ class Dron:
         self.id = id_nb
         self.path = []
         self.current_zone = None
-        self.movements = True
         self.end_path = False
+        self.is_in_transit = False
+        self.target_zone = None
+        self.active_connection = None
 
     def check_next_step(self):
         if self.path:
             return self.path[0]
         return None
 
-    def move_way(self, next_zone) -> None:
+    def move_way(self, next_zone, conn) -> None:
         if self.current_zone:
             self.current_zone.current_drones.remove(self)
-        next_zone.current_drones.append(self)
-        self.current_zone = next_zone
+        self.active_connection = conn
         if self in next_zone.reserved_zone:
             next_zone.reserved_zone.remove(self)
-        cost = next_zone.get_movement_cost()
-        if cost == 2:
-            self.movements = False
+        if next_zone.typ.value == "restricted":
+            self.is_in_transit = True
+            self.target_zone = next_zone
+            self.current_zone = None
+        else:
+            self.current_zone = next_zone
+            next_zone.current_drones.append(self)
         if self.path and self.path[0] == next_zone:
             self.path.pop(0)

@@ -38,11 +38,7 @@ class Algorithm:
                 neighbor = next(
                     z for z in self.data.zones if z.name == zone_neighbor
                     )
-                if not neighbor.has_capacity():
-                    prio_penality = dron_actual.id * 0.01
-                    step_step = 1 + prio_penality
-                else:
-                    step_step = neighbor.get_movement_cost()
+                step_step = neighbor.get_movement_cost()
                 new_distanc = distanc[node_actual] + step_step
                 is_prio = isinstance(neighbor, PriorityZone)
                 if new_distanc < distanc[neighbor]:
@@ -67,10 +63,14 @@ class Algorithm:
         for reserv in dron.path:
             reserv.reserved_zone.append(dron)
 
-    def _pop_reserv(self, dron):
-        for zone in dron.path:
-            if dron in zone.reserved_zone:
-                zone.reserved_zone.pop(dron)
+    def _check_path_len(self, path):
+        i = 0
+        for x in path:
+            if x.typ.value == "restricted":
+                i += 2
+            else:
+                i += 1
+        return i
 
     def simulation_fly(self) -> None:
         self._start_append()
@@ -82,19 +82,24 @@ class Algorithm:
         while len(self.end_zone.current_drones) != len(self.data.drons):
             moves = []
             self.data.drons.sort(key=lambda dron: len(dron.path))
+            blocks = [d.active_connection for d in self.data.drons if d.is_in_transit]
             for dron in self.data.drons:
                 if dron.current_zone == self.end_zone:
                     continue
-                if not dron.movements:
-                    dron.movements = True
+                if dron.is_in_transit is True:
+                    dron.current_zone = dron.target_zone
+                    dron.current_zone.current_drones.append(dron)
+                    dron.is_in_transit = False
+                    moves.append(f"D{dron.id}-{dron.target_zone.name}")
                     continue
                 if dron.path and dron.path[0] == dron.current_zone:
                     dron.path.pop(0)
                 next_zone = dron.check_next_step()
                 if not next_zone or not next_zone.has_capacity():
                     new_path = self._process_dijks(dron)
-                    if len(new_path) < len(dron.path)\
-                            or not next_zone.has_capacity():
+                    x = self._check_path_len(new_path)
+                    y = self._check_path_len(dron.path)
+                    if x < y:
                         dron.path = new_path
                         self._reserv_zone(dron)
                 if next_zone:
@@ -103,12 +108,18 @@ class Algorithm:
                         )
                     if pathway and next_zone.has_capacity()\
                             and pathway.occupy():
-                        dron.move_way(next_zone)
-                        moves.append(f"D{dron.id}-{next_zone.name}")
+                        dron.move_way(next_zone, pathway)
+                        if dron.is_in_transit:
+                            pass
+                        else:
+                            moves.append(f"D{dron.id}-{next_zone.name}")
                     else:
                         pass
             for conn in self.data.connections:
-                conn.current_usage = 0
+                if conn not in blocks:
+                    conn.current_usage = 0
+                else:
+                    pass
             i += 1
             print(f"Turn {i}- ", end="")
             print(" ".join(moves))

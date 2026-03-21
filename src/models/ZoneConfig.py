@@ -30,6 +30,7 @@ class HubColor(Enum):
     CRIMSON = "crimson"
     RAINBOW = "rainbow"
 
+
 class ZoneType(Enum):
     NORMAL = "normal"
     BLOCKED = "blocked"

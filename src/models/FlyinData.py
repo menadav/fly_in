@@ -65,3 +65,4 @@ class FlyinData:
                 if zone.name in connect.nodes:
                     if connect not in zone.connection:
                         zone.connection.append(connect)
+                connect.map_zones.update(self.map_zones)
