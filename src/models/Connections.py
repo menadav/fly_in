@@ -1,14 +1,15 @@
+from typing import Dict
 from src.models.ClassZone import Zone, StartZone, EndZone
 
 
 class Connection:
-    def __init__(self, zone_1: Zone, zone_2: Zone, capacity: int):
-        self.nodes = (zone_1, zone_2)
-        self.capacity = capacity
-        self.current_usage = 0
-        self.map_zones = {}
+    def __init__(self, zone_1: str, zone_2: str, capacity: int):
+        self.nodes: tuple[str, str] = (zone_1, zone_2)
+        self.capacity: int = capacity
+        self.current_usage: int = 0
+        self.map_zones: Dict[Zone, Zone] = {}
 
-    def _check_capacity(self) -> int:
+    def _check_capacity(self) -> float:
         n1, n2 = self.nodes
         n1 = self.map_zones.get(n1)
         n2 = self.map_zones.get(n2)
@@ -27,6 +28,6 @@ class Connection:
         else:
             return False
 
-    def release(self):
+    def release(self) -> None:
         if self.current_usage > 0:
             self.current_usage -= 1

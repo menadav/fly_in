@@ -1,9 +1,10 @@
-from typing import List
-from src.models.ZoneConfig import ZoneHub, ZoneConnection, DronData
+from typing import List, Union
+from src.models.ZoneConfig import ZoneHub, ZoneConnection
+ParsedData = Union[int, ZoneHub, ZoneConnection]
 
 
-def validation_data(file_path: str) -> List:
-    zone_list = []
+def validation_data(file_path: str) -> List[ParsedData]:
+    zone_list: List[ParsedData] = []
     has_nb_drones = False
     try:
         with open(file_path, 'r', encoding="utf-8") as f:
@@ -17,7 +18,7 @@ def validation_data(file_path: str) -> List:
                         )
                 if "nb_drones" in line_clean:
                     if not has_nb_drones:
-                        n_drones = dron_nb(line_clean)
+                        n_drones: int = dron_nb(line_clean)
                         zone_list.append(n_drones)
                         has_nb_drones = True
                         continue
@@ -25,11 +26,13 @@ def validation_data(file_path: str) -> List:
                         raise ValueError(
                             "[ERROR] First line must be nb_drones"
                                          )
+                item: Union[ZoneHub, ZoneConnection, None] = None
                 if "connection" in line_clean:
-                    new_zone = ZoneConnection.parse_line(line_clean)
+                    item = ZoneConnection.parse_line(line_clean)
                 else:
-                    new_zone = ZoneHub.parse_line(line_clean)
-                zone_list.append(new_zone)
+                    item = ZoneHub.parse_line(line_clean)
+                if item is not None:
+                    zone_list.append(item)
             check_zone(zone_list)
             return zone_list
     except ValueError as e:
@@ -42,43 +45,40 @@ def validation_data(file_path: str) -> List:
         raise ValueError(f"[ERROR] {e}")
 
 
-def check_zone(zones: List[int | DronData]) -> None:
+def check_zone(zones: List[ParsedData]) -> None:
     count_start = 0
     count_end = 0
     list_name = []
     name1_name2 = []
     coords_seen = set()
-    data_zone = ["start_hub", "end_hub", "hub"]
     for data in zones:
         if isinstance(data, int):
             continue
-        if data.type in data_zone:
+        if isinstance(data, ZoneHub):
             current_pos = (data.x, data.y)
             if current_pos in coords_seen:
                 raise ValueError(
                     f"[ERROR] Collision: Multiple hubs at {current_pos}"
                     )
             coords_seen.add(current_pos)
-        if data.type == "start_hub":
             check_space(data.name)
-            list_name.append(data.name)
-            count_start += 1
-            if count_start != 1:
-                raise ValueError("[ERROR] start_hub")
-        elif data.type == "end_hub":
-            check_space(data.name)
-            list_name.append(data.name)
-            count_end += 1
-            if count_end != 1:
-                raise ValueError("[ERROR] end_hub")
-        elif data.type == "hub":
-            if data.name not in list_name:
-                check_space(data.name)
+            if data.type == "start_hub":
                 list_name.append(data.name)
-            else:
-                raise ValueError("[ERROR] Name is repit")
-            continue
-        elif data.type == "connection":
+                count_start += 1
+                if count_start != 1:
+                    raise ValueError("[ERROR] start_hub")
+            elif data.type == "end_hub":
+                list_name.append(data.name)
+                count_end += 1
+                if count_end != 1:
+                    raise ValueError("[ERROR] end_hub")
+            elif data.type == "hub":
+                if data.name not in list_name:
+                    list_name.append(data.name)
+                else:
+                    raise ValueError("[ERROR] Name is repit")
+                continue
+        elif isinstance(data, ZoneConnection):
             nam1_nam2 = data.name1, data.name2
             nam2_nam1 = data.name2, data.name1
             if nam1_nam2 in name1_name2 \
@@ -106,7 +106,7 @@ def check_space(line: str) -> None:
 
 
 def dron_nb(line: str) -> int:
-    try: 
+    try:
         parts = line.split(":", 1)
         number = int(parts[1])
         if number <= 0:

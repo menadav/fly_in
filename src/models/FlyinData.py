@@ -43,7 +43,12 @@ class FlyinData:
         if not zone_a or not zone_b:
             return None
         for conn in zone_a.connection:
-            nombres_en_conexion = [node.name if hasattr(node, 'name') else node for node in conn.nodes]
+            nombres_en_conexion = [
+                node.name
+                if hasattr(node, 'name')
+                else node
+                for node in conn.nodes
+            ]
             if zone_b.name in nombres_en_conexion:
                 return conn
         return None

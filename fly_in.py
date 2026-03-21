@@ -13,7 +13,7 @@ from src.algo.dijks_algo import Algorithm
 
 def main() -> None:
     if len(sys.argv) != 2:
-        print("[ERROR] You need config.txt \n", file=sys.stderr)
+        print("[ERROR] Need a file \n", file=sys.stderr)
         sys.exit(1)
     try:
         data = validation_data(sys.argv[1])

@@ -1,14 +1,17 @@
+from typing import List, Optional, Any
+
+
 class Dron:
     def __init__(self, id_nb: int) -> None:
-        self.id = id_nb
-        self.path = []
-        self.current_zone = None
-        self.end_path = False
-        self.is_in_transit = False
-        self.target_zone = None
-        self.active_connection = None
+        self.id: int = id_nb
+        self.path: List[Any] = []
+        self.current_zone: Optional[Any] = None
+        self.end_path: bool = False
+        self.is_in_transit: bool = False
+        self.target_zone: Optional[Any] = None
+        self.active_connection: Optional[Any] = None
 
-    def check_next_step(self):
+    def check_next_step(self) -> Optional[Any]:
         if self.path:
             return self.path[0]
         return None

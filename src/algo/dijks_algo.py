@@ -82,7 +82,11 @@ class Algorithm:
         while len(self.end_zone.current_drones) != len(self.data.drons):
             moves = []
             self.data.drons.sort(key=lambda dron: len(dron.path))
-            blocks = [d.active_connection for d in self.data.drons if d.is_in_transit]
+            blocks = [
+                d.active_connection
+                for d in self.data.drons
+                if d.is_in_transit
+            ]
             for dron in self.data.drons:
                 if dron.current_zone == self.end_zone:
                     continue

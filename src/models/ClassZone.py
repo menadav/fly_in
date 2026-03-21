@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 from src.models.ZoneConfig import ZoneType
+if TYPE_CHECKING:
+    from src.models.Connections import Connection
+    from src.models.Dron import Dron
 
 
 class Zone(ABC):
@@ -12,12 +16,12 @@ class Zone(ABC):
         self.x_y = x_y
         self.color = color
         self.max_drones = max_drones
-        self.connection = []
-        self.current_drones = []
-        self.reserved_zone = []
+        self.connection: list['Connection'] = []
+        self.current_drones: list['Dron'] = []
+        self.reserved_zone: list[Zone] = []
 
     @abstractmethod
-    def get_movement_cost(self) -> int:
+    def get_movement_cost(self) -> float:
         pass
 
     @abstractmethod
@@ -38,7 +42,7 @@ class NormalZone(Zone):
 
 class StartZone(NormalZone):
     def __init__(
-            self, typ, name: str, x_y: tuple[int, int],
+            self, typ: ZoneType, name: str, x_y: tuple[int, int],
             color: str, max_drones: int
             ) -> None:
         super().__init__(typ, name, x_y, color, max_drones)
@@ -50,7 +54,7 @@ class StartZone(NormalZone):
 
 class EndZone(NormalZone):
     def __init__(
-            self, typ, name: str, x_y: tuple[int, int],
+            self, typ: ZoneType, name: str, x_y: tuple[int, int],
             color: str, max_drones: int
             ) -> None:
         super().__init__(typ, name, x_y, color, max_drones)
