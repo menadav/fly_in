@@ -1,4 +1,6 @@
 from typing import List, Optional, Any
+from src.models.ClassZone import Zone
+from src.models.Connections import Connection
 
 
 class Dron:
@@ -16,7 +18,7 @@ class Dron:
             return self.path[0]
         return None
 
-    def move_way(self, next_zone, conn) -> None:
+    def move_way(self, next_zone: Zone, conn: Connection) -> None:
         if self.current_zone:
             self.current_zone.current_drones.remove(self)
         self.active_connection = conn

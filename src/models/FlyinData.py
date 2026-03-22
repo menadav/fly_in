@@ -1,4 +1,5 @@
-from src.models.ClassZone import NormalZone, PriorityZone, \
+from typing import List, Dict, Any, Optional
+from src.models.ClassZone import Zone, NormalZone, PriorityZone, \
       RestrictedZone, BlockedZone, StartZone, EndZone
 from src.models.Dron import Dron
 from src.models.Connections import Connection
@@ -6,18 +7,18 @@ from src.models.Connections import Connection
 
 class FlyinData:
     def __init__(self) -> None:
-        self.zones = []
-        self.drons = []
-        self.connections = []
-        self.map_zones = {}
+        self.zones: List[Zone] = []
+        self.drons: List[Dron] = []
+        self.connections: List[Connection] = []
+        self.map_zones: Dict[Zone, Zone] = {}
 
     def _create_drons(self, id_n: int) -> Dron:
         return Dron(id_n)
 
-    def _select_connection(self, tunnel):
+    def _select_connection(self, tunnel: Any) -> Connection:
         return Connection(tunnel.name1, tunnel.name2, tunnel.max_link_capacity)
 
-    def _select_zone(self, hub_data):
+    def _select_zone(self, hub_data: Any) -> Zone:
         params = {
             "typ": hub_data.zone,
             "name": hub_data.name,
@@ -39,7 +40,9 @@ class FlyinData:
             return BlockedZone(**params)
         return NormalZone(**params)
 
-    def get_connection(self, zone_a, zone_b):
+    def get_connection(
+            self, zone_a: Zone, zone_b: Zone
+            ) -> Optional[Connection]:
         if not zone_a or not zone_b:
             return None
         for conn in zone_a.connection:
@@ -53,8 +56,9 @@ class FlyinData:
                 return conn
         return None
 
-    def _append_zones_drons_connections(self, data) -> None:
-        for i in range(data[0]):
+    def _append_zones_drons_connections(self, data: List[Any]) -> None:
+        num_drones = int(data[0]) if isinstance(data[0], (int, str)) else 0
+        for i in range(num_drones):
             dron = self._create_drons(i)
             self.drons.append(dron)
         for item in data:

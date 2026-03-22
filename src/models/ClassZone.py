@@ -18,7 +18,7 @@ class Zone(ABC):
         self.max_drones = max_drones
         self.connection: list['Connection'] = []
         self.current_drones: list['Dron'] = []
-        self.reserved_zone: list[Zone] = []
+        self.reserved_zone: list['Dron'] = []
 
     @abstractmethod
     def get_movement_cost(self) -> float:
@@ -88,7 +88,7 @@ class RestrictedZone(Zone):
 
 class BlockedZone(Zone):
 
-    def get_movement_cost(self) -> int:
+    def get_movement_cost(self) -> float:
         return float('inf')
 
     def has_capacity(self) -> bool:
