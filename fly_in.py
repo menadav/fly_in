@@ -11,6 +11,7 @@ from src.algo.bfs_algo import check_bfs
 from src.algo.dijks_algo import Algorithm
 from src.render.render_zones import Visualizer
 
+
 def main() -> None:
     if len(sys.argv) != 2:
         print("[ERROR] Need a file \n", file=sys.stderr)
@@ -30,8 +31,9 @@ def main() -> None:
         sys.exit(1)
     algo = Algorithm(fly_data)
     algo.simulation_fly()
-    visual = Visualizer(algo)    
+    visual = Visualizer(algo)
     visual.main_loop()
+
 
 if __name__ == "__main__":
     main()
