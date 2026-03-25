@@ -28,6 +28,10 @@ class Zone(ABC):
     def has_capacity(self) -> bool:
         pass
 
+    def get_screen_coords(self, tile_size: int = 60) -> tuple[int, int]:
+        screen_x = self.x_y[0] * tile_size
+        screen_y = self.x_y[1] * tile_size
+        return (screen_x, screen_y)
 
 class NormalZone(Zone):
 

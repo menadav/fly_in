@@ -1,28 +1,37 @@
-from src.models.ClassZone import StartZone, EndZone, PriorityZone
+from typing import Dict, Tuple, Any, Optional, List
+from src.models.ClassZone import Zone, StartZone, EndZone, PriorityZone
+from src.models.Dron import Dron
 
 
 class Algorithm:
-    def __init__(self, data) -> None:
+    def __init__(self, data: Any) -> None:
         self.data = data
-        self.start_zone = next(
+        self.moves = []
+        self.start_zone: Optional[StartZone] = next(
             (z for z in self.data.zones if isinstance(z, StartZone)), None
             )
-        self.end_zone = next(
+        self.end_zone: Optional[EndZone] = next(
             (z for z in self.data.zones if isinstance(z, EndZone)), None
             )
 
-    def _get_priority(self, zone, distanc):
+    def _get_priority(
+            self, zone: Zone, distanc: Dict[Zone, float]
+            ) -> Tuple[float, int]:
         dist = distanc[zone]
         prio_type = 0 if isinstance(zone, PriorityZone) else 1
         return (dist, prio_type)
 
-    def _process_dijks(self, dron_actual=None):
-        distanc = {z: float('inf') for z in self.data.zones}
-        father = {z: None for z in self.data.zones}
-        next_node = list(self.data.zones)
-        distanc[dron_actual.current_zone] = 0
+    def _process_dijks(self, dron_actual: Dron) -> List[Zone]:
+        distanc: Dict[Zone, float] = {z: float('inf') for z in self.data.zones}
+        father: Dict[Zone, Optional[Zone]] = {z: None for z in self.data.zones}
+        next_node: List[Zone] = list(self.data.zones)
+        curr = dron_actual.current_zone
+        if curr is not None:
+            distanc[curr] = 0
+        else:
+            return []
 
-        def wrap_priority(z):
+        def wrap_priority(z: Zone) -> Tuple[float, int]:
             return self._get_priority(z, distanc)
         while next_node:
             node_actual = min(next_node, key=wrap_priority)
@@ -46,24 +55,29 @@ class Algorithm:
                     father[neighbor] = node_actual
                 elif new_distanc == distanc[neighbor] and is_prio:
                     father[neighbor] = node_actual
-        return self._way_path(father, self.end_zone)
+        if self.end_zone:
+            return self._way_path(father, self.end_zone)
+        return []
 
-    def _way_path(self, father, dest):
-        path = []
-        actual = dest
+    def _way_path(
+            self, father: Dict[Zone, Optional[Zone]], dest: Zone
+            ) -> List[Zone]:
+        path: List[Zone] = []
+        actual: Optional[Zone] = dest
         while actual is not None:
             path.append(actual)
             actual = father[actual]
         return path[::-1]
 
     def _start_append(self) -> None:
-        self.start_zone.current_drones.extend(self.data.drons)
+        if self.start_zone is not None:
+            self.start_zone.current_drones.extend(self.data.drons)
 
-    def _reserv_zone(self, dron):
+    def _reserv_zone(self, dron: Dron) -> None:
         for reserv in dron.path:
             reserv.reserved_zone.append(dron)
 
-    def _check_path_len(self, path):
+    def _check_path_len(self, path: List[Zone]) -> int:
         i = 0
         for x in path:
             if x.typ.value == "restricted":
@@ -74,6 +88,8 @@ class Algorithm:
 
     def simulation_fly(self) -> None:
         self._start_append()
+        if self.start_zone is None or self.end_zone is None:
+            return
         for dron in self.data.drons:
             dron.current_zone = self.start_zone
             dron.path = self._process_dijks(dron)
@@ -125,5 +141,6 @@ class Algorithm:
                 else:
                     pass
             i += 1
+            self.moves += moves
             print(f"Turn {i}- ", end="")
             print(" ".join(moves))

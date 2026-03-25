@@ -1,8 +1,8 @@
-from typing import List, Set
+from typing import List, Set, Any
 from src.models.ClassZone import Zone, EndZone, StartZone, BlockedZone
 
 
-def check_bfs(map_zone: dict[str, Zone]) -> bool:
+def check_bfs(map_zone: dict[Any, Zone]) -> bool:
     end_zone = next(
         (z for z in map_zone.values() if isinstance(z, EndZone)), None
         )

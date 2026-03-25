@@ -80,17 +80,17 @@ class ZoneHub(DronData):
                 "max_drones": 1
             }
             if metadata:
-                metadata_str = metadata[0]
+                metadata_str = metadata[0].strip("[] ").strip()
+                metadata_str = re.sub(r'\s*=\s*', '=', metadata_str)
                 pairs = re.split(r"[,\s]+", metadata_str)
                 check_zone = False
                 check_color = False
                 check_drones = False
                 for pair in pairs:
+                    pair = pair.strip()
                     if '=' not in pair:
                         raise ValueError(f"[ERROR] Incorrect Metadata {line}")
-                    key, value = pair.split("=", 1)
-                    key = key.strip()
-                    value = value.strip()
+                    key, value = [p.strip() for p in pair.split("=", 1)]
                     if key == "zone":
                         if check_zone:
                             raise ValueError(f"[ERROR] Color is repit {line}")
@@ -156,14 +156,21 @@ class ZoneConnection(DronData):
 
             }
             if metadata:
-                metadata_str = metadata[0]
+                metadata_str = metadata[0].strip("[] ").strip()
                 if '=' in metadata_str:
-                    key, value = metadata_str.split('=', 1)
-                    if key.strip() == "max_link_capacity":
+                    key_raw, value_raw = metadata_str.split('=', 1)
+                    key = key_raw.strip()
+                    value = value_raw.strip()
+                    if key == "max_link_capacity":
                         conn_data["max_link_capacity"] = int(value.strip())
+                    else:
+                        raise ValueError(
+                                f"[ERROR] Diferent Key: {line}"
+                                )
                 else:
                     raise ValueError(
-                        f"[ERROR] Diferrent Metadata 'max_link_capacity'{line}"
+                        "[ERROR] Diferrent Metadata"
+                        f" 'max_link_capacity': {line}"
                         )
             return cls(
                 type=str(conn_data["type"]),
