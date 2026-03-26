@@ -6,7 +6,7 @@ from src.models.Dron import Dron
 class Algorithm:
     def __init__(self, data: Any) -> None:
         self.data = data
-        self.moves = []
+        self.moves: list[list[str]] = []
         self.start_zone: Optional[StartZone] = next(
             (z for z in self.data.zones if isinstance(z, StartZone)), None
             )

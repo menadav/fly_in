@@ -1,12 +1,14 @@
 import pygame
 import os
+from typing import Dict, Tuple, Union
 from src.models.ClassZone import StartZone, EndZone, PriorityZone, \
-        RestrictedZone, BlockedZone
+        RestrictedZone, BlockedZone, Zone
 from src.render.color import ColorPalette as col
+from src.algo.dijks_algo import Algorithm
 
 
 class Visualizer:
-    def __init__(self, algo):
+    def __init__(self, algo: Algorithm) -> None:
         pygame.init()
         self.algo = algo
         self.width, self.height = 2400, 1400
@@ -20,7 +22,7 @@ class Visualizer:
         self._spawn_drones_at_start()
         self._optimize_original_moves()
 
-    def _optimize_original_moves(self):
+    def _optimize_original_moves(self) -> None:
         zones_map = {z.name: z for z in self.algo.data.zones}
         moves = self.algo.moves
         for i in range(1, len(moves)):
@@ -44,7 +46,7 @@ class Visualizer:
                 previous_turn.append(m)
                 current_turn.remove(m)
 
-    def _spawn_drones_at_start(self):
+    def _spawn_drones_at_start(self) -> None:
         """Fuerza a todos los drones a posicionarse en la zona de salida."""
         start_node = next(
             (z for z in self.algo.data.zones if isinstance(z, StartZone)), None
@@ -65,7 +67,7 @@ class Visualizer:
             d.real_x = sx - d_w
             d.real_y = sy - d_h
 
-    def _setup_grid(self):
+    def _setup_grid(self) -> None:
         """Calcula posiciones lógicas con más margen y centrado real."""
         self.cols = max(z.x_y[0] for z in self.algo.data.zones) + 1
         self.rows = max(z.x_y[1] for z in self.algo.data.zones) + 1
@@ -77,7 +79,7 @@ class Visualizer:
         self.off_x = (self.width - (self.cols * self.tile_size)) // 2
         self.off_y = (self.height - (self.rows * self.tile_size)) // 2
 
-    def _load(self):
+    def _load(self) -> Dict[str, pygame.Surface]:
         p = os.path.join(os.path.dirname(__file__), "..", "assents")
         size = int(self.tile_size * 0.7)
         b_size = int(self.tile_size * 0.9)
@@ -93,7 +95,9 @@ class Visualizer:
             "rainbow_bg": self._img(p, "rainbow_circle.png", (b_size, b_size))
         }
 
-    def _img(self, folder, name, size):
+    def _img(
+            self, folder: str, name: str, size: Tuple[int, int]
+            ) -> pygame.Surface:
         try:
             path = os.path.join(folder, name)
             img = pygame.image.load(path).convert_alpha()
@@ -104,7 +108,7 @@ class Visualizer:
             surf.fill((255, 0, 255))
             return surf
 
-    def _draw_connections(self):
+    def _draw_connections(self) -> None:
         color_borde = (30, 30, 30)
         color_relleno = (120, 120, 120)
         zones_by_name = {z.name: z for z in self.algo.data.zones}
@@ -135,12 +139,18 @@ class Visualizer:
                         self.screen, color_relleno, (x1, y1), (x2, y2), ancho
                         )
 
-    def _replace_black_color(self, image, new_color):
+    def _replace_black_color(
+        self,
+        image: pygame.Surface,
+        new_color: Union[pygame.Color, Tuple[int, int, int], str]
+    ) -> pygame.Surface:
         """Crea una silueta nueva usando el color de la zona como relleno."""
+        if isinstance(new_color, str):
+            return image
         mask = pygame.mask.from_surface(image)
         return mask.to_surface(setcolor=new_color, unsetcolor=(0, 0, 0, 0))
 
-    def _draw(self):
+    def _draw(self) -> None:
         self.screen.blit(self.assets["bg"], (0, 0))
         zones_by_name = {z.name: z for z in self.algo.data.zones}
         self._draw_connections()
@@ -178,7 +188,7 @@ class Visualizer:
                 self.screen.blit(img_final, (ix, iy))
         self._draw_drones(zones_by_name)
 
-    def _draw_drones(self, zones_by_name):
+    def _draw_drones(self, zones_by_name: Dict[str, Zone]) -> None:
         for d in self.algo.data.drons:
             if hasattr(d, 'target_pos') and d.travel_t < 1.0:
                 d.travel_t = min(1.0, d.travel_t + getattr(d, 'step', 0.016))
@@ -190,7 +200,7 @@ class Visualizer:
                     ) * d.travel_t
             self.screen.blit(self.assets["dron"], (d.real_x, d.real_y))
 
-    def _update_movements(self, zones_by_name):
+    def _update_movements(self, zones_by_name: Dict[str, Zone]) -> None:
         now = pygame.time.get_ticks()
         if self.move_index >= len(self.algo.moves)\
                 or now - self.move_timer <= self.move_delay:
@@ -217,7 +227,7 @@ class Visualizer:
         self.move_index += 1
         self.move_timer = now
 
-    def main_loop(self):
+    def main_loop(self) -> None:
         while True:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:

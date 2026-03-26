@@ -1,3 +1,4 @@
+from typing import Union, Tuple
 from src.models.ZoneConfig import HubColor
 
 
@@ -24,13 +25,8 @@ class ColorPalette:
     }
 
     @staticmethod
-    def get_rgb(hub_color):
+    def get_rgb(hub_color: HubColor) -> Union[Tuple[int, int, int], str]:
         """Devuelve el color RGB. Si es RAINBOW, genera uno animado."""
         if hub_color == HubColor.RAINBOW:
             return "RAINBOW_SIG"
         return ColorPalette._RGB_MAP.get(hub_color, (200, 200, 200))
-
-    @staticmethod
-    def get_all_colors():
-        """Devuelve todos los colores disponibles (útil para debug)."""
-        return ColorPalette._RGB_MAP.keys()

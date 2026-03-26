@@ -43,5 +43,6 @@ connection: priority_bypass2-convergence
 # Final challenge
 connection: convergence-final_bottleneck
 connection: final_bottleneck-goal
+
 # Emergency overflow paths
 connection: waiting_area3-convergence

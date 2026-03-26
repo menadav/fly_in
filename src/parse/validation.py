@@ -15,6 +15,7 @@ def validation_data(file_path: str) -> List[ParsedData]:
                 if ':' not in line_clean:
                     raise ValueError(
                         "[ERROR] Invalid line format (missing ':')"
+                        f" \n{line}"
                         )
                 if "nb_drones" in line_clean:
                     if not has_nb_drones:
@@ -76,19 +77,19 @@ def check_zone(zones: List[ParsedData]) -> None:
                 if data.name not in list_name:
                     list_name.append(data.name)
                 else:
-                    raise ValueError("[ERROR] Name is repit")
+                    raise ValueError(f"[ERROR] Name is repit \n{data.name}")
                 continue
         elif isinstance(data, ZoneConnection):
             nam1_nam2 = data.name1, data.name2
             nam2_nam1 = data.name2, data.name1
             if nam1_nam2 in name1_name2 \
                     or data.name1 == data.name2 or nam2_nam1 in name1_name2:
-                raise ValueError("[ERROR] Connection is repit")
+                raise ValueError(f"[ERROR] Connection is repit\n{data}")
             else:
                 name1_name2.append(nam1_nam2)
             continue
         else:
-            raise ValueError("[ERROR] Type is different")
+            raise ValueError(f"[ERROR] Type is different\n{data.type}")
     if count_start != 1:
         raise ValueError("[ERROR] Need start_hub")
     elif count_end != 1:
@@ -100,17 +101,15 @@ def check_zone(zones: List[ParsedData]) -> None:
 
 def check_space(line: str) -> None:
     if " " in line:
-        raise ValueError("[ERROR] Name have space {line}")
+        raise ValueError("[ERROR] Name have space\n{line}")
     if "-" in line:
-        raise ValueError("[ERROR] Name have '-' {line}")
+        raise ValueError("[ERROR] Name have '-'\n{line}")
 
 
 def dron_nb(line: str) -> int:
     try:
         parts = line.split(":", 1)
         number = int(parts[1])
-        if number <= 0:
-            raise ValueError("[ERROR] Need positiv Drons {line}")
         return number
     except ValueError:
-        raise ValueError("[ERROR] Need value for nb drons {line}")
+        raise ValueError("[ERROR] Need value for nb drons\n{line}")

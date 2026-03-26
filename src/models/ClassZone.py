@@ -33,6 +33,7 @@ class Zone(ABC):
         screen_y = self.x_y[1] * tile_size
         return (screen_x, screen_y)
 
+
 class NormalZone(Zone):
 
     def get_movement_cost(self) -> float:
