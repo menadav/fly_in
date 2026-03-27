@@ -13,6 +13,24 @@ from src.render.render_zones import Visualizer
 
 
 def main() -> None:
+    """
+    Execute the main simulation pipeline for the Fly-in Drones project.
+    This function handles the lifecycle of the simulation:
+    1. Parses and validates input data from a JSON/file source.
+    2. Initializes the data models and drone maps.
+    3. Performs a BFS check to ensure a valid path exists between
+        start and end.
+    4. Runs the pathfinding algorithm (Dijkstra-based) to schedule
+        drone movements.
+    5. Launches the visualizer to display the simulation results.
+
+    Args:
+        None (Reads from sys.argv).
+
+    Raises:
+        ValueError: If the input file format is incorrect.
+        ValidationError: If the data does not match the Pydantic schema.
+    """
     if len(sys.argv) != 2:
         print("[ERROR] Need a file \n", file=sys.stderr)
         sys.exit(1)

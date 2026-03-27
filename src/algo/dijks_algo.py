@@ -4,6 +4,13 @@ from src.models.Dron import Dron
 
 
 class Algorithm:
+    """
+    The central simulation engine using a dynamic Dijkstra approach.
+
+    This class coordinates the movement of all drones, recalculating paths
+    based on network congestion and managing turn-based state transitions
+    (transit, occupancy, and link capacity).
+    """
     def __init__(self, data: Any) -> None:
         self.data = data
         self.moves: list[list[str]] = []
@@ -17,11 +24,34 @@ class Algorithm:
     def _get_priority(
             self, zone: Zone, distanc: Dict[Zone, float]
             ) -> Tuple[float, int]:
+        """
+        Calculates a priority tuple for Dijkstra's node selection.
+
+        Args:
+            zone (Zone): The hub to evaluate.
+            distanc (Dict[Zone, float]): Current distance table.
+
+        Returns:
+            Tuple[float, int]: (Distance, Priority flag), where priority hubs
+                               have a flag of 0 to be selected first.
+        """
         dist = distanc[zone]
         prio_type = 0 if isinstance(zone, PriorityZone) else 1
         return (dist, prio_type)
 
     def _process_dijks(self, dron_actual: Dron) -> List[Zone]:
+        """
+        Calculates the optimal path for a specific drone using Dijkstra.
+
+        The algorithm uses the dynamic cost from each zone, which increases
+        as more drones occupy or reserve that area.
+
+        Args:
+            dron_actual (Dron): The drone requiring a path.
+
+        Returns:
+            List[Zone]: An ordered list of Zone objects from current to end.
+        """
         distanc: Dict[Zone, float] = {z: float('inf') for z in self.data.zones}
         father: Dict[Zone, Optional[Zone]] = {z: None for z in self.data.zones}
         next_node: List[Zone] = list(self.data.zones)
@@ -62,6 +92,16 @@ class Algorithm:
     def _way_path(
             self, father: Dict[Zone, Optional[Zone]], dest: Zone
             ) -> List[Zone]:
+        """
+        Reconstructs the path from the 'father' dictionary.
+
+        Args:
+            father (Dict): Mapping of zones to their predecessors.
+            dest (Zone): Target destination zone.
+
+        Returns:
+            List[Zone]: Reconstructed path from start to finish.
+        """
         path: List[Zone] = []
         actual: Optional[Zone] = dest
         while actual is not None:
@@ -70,14 +110,29 @@ class Algorithm:
         return path[::-1]
 
     def _start_append(self) -> None:
+        """Adds all drones to the starting zone's occupancy list."""
         if self.start_zone is not None:
             self.start_zone.current_drones.extend(self.data.drons)
 
     def _reserv_zone(self, dron: Dron) -> None:
+        """
+        Registers a drone in the reservation lists of all
+        zones in its path.
+        """
         for reserv in dron.path:
             reserv.reserved_zone.append(dron)
 
     def _check_path_len(self, path: List[Zone]) -> int:
+        """
+        Calculates the estimated turn duration of a path.
+
+        Args:
+            path (List[Zone]): The route to evaluate.
+
+        Returns:
+            int: Total turns required, accounting for
+            Restricted zones (2 turns).
+        """
         i = 0
         for x in path:
             if x.typ.value == "restricted":
@@ -87,6 +142,16 @@ class Algorithm:
         return i
 
     def simulation_fly(self) -> None:
+        """
+        Executes the main simulation loop.
+
+        This method iterates turn-by-turn until all drones reach the end zone.
+        It handles:
+        1. Drone arrivals from transit.
+        2. Dynamic path recalculation if better routes appear.
+        3. Movement execution and connection occupancy.
+        4. Link capacity releases.
+        """
         self._start_append()
         if self.start_zone is None or self.end_zone is None:
             return

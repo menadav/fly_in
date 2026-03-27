@@ -3,6 +3,21 @@ from src.models.ClassZone import Zone, EndZone, StartZone, BlockedZone
 
 
 def check_bfs(map_zone: dict[Any, Zone]) -> bool:
+    """
+    Performs a Breadth-First Search to verify if the destination is reachable.
+
+    This acts as a sanity check for the simulation. It ignores movement
+    costs and capacities, focusing solely on whether a physical path exists
+    from the start hub to the end hub while avoiding blocked zones.
+
+    Args:
+        map_zone (dict[Any, Zone]): A dictionary mapping zone names/IDs
+                                     to their respective Zone objects.
+
+    Returns:
+        bool: True if at least one valid path exists between Start and End,
+              False otherwise.
+    """
     end_zone = next(
         (z for z in map_zone.values() if isinstance(z, EndZone)), None
         )

@@ -4,6 +4,24 @@ ParsedData = Union[int, ZoneHub, ZoneConnection]
 
 
 def validation_data(file_path: str) -> List[ParsedData]:
+    """
+    Parses and validates a configuration file to extract drone and map data.
+
+    This function reads a file line-by-line, ignores comments, and converts
+    the text into structured Python objects. It also ensures the file starts
+    with the drone count.
+
+    Args:
+        file_path (str): The path to the input configuration file.
+
+    Returns:
+        List[ParsedData]: A list containing the number of drones (int) followed
+                          by ZoneHub and ZoneConnection objects.
+
+    Raises:
+        ValueError: If the file format is incorrect, missing required elements,
+                    or contains invalid data.
+    """
     zone_list: List[ParsedData] = []
     has_nb_drones = False
     try:
@@ -47,6 +65,16 @@ def validation_data(file_path: str) -> List[ParsedData]:
 
 
 def check_zone(zones: List[ParsedData]) -> None:
+    """
+    Verifies the logical integrity of the parsed map data.
+
+    Checks performed:
+    - Exactly one 'start_hub' and one 'end_hub' exist.
+    - No two hubs share the same coordinates.
+    - No two hubs share the same name.
+    - Connections only refer to hubs that actually exist.
+    - No duplicate or self-referencing connections.
+    """
     count_start = 0
     count_end = 0
     list_name = []
@@ -100,6 +128,9 @@ def check_zone(zones: List[ParsedData]) -> None:
 
 
 def check_space(line: str) -> None:
+    """
+    Validates that a hub name does not contain illegal characters
+    """
     if " " in line:
         raise ValueError("[ERROR] Name have space\n{line}")
     if "-" in line:
@@ -107,9 +138,16 @@ def check_space(line: str) -> None:
 
 
 def dron_nb(line: str) -> int:
+    """
+    Extracts the number of drones from a configuration line.
+    """
     try:
         parts = line.split(":", 1)
         number = int(parts[1])
+        if not number > 0:
+            raise ValueError("[ERROR] Need minimum 1 dron for start ")
         return number
-    except ValueError:
+    except ValueError as e:
+        if "minimum 1 drone" in str(e):
+            raise e
         raise ValueError("[ERROR] Need value for nb drons\n{line}")

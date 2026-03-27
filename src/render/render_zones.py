@@ -8,6 +8,24 @@ from src.algo.dijks_algo import Algorithm
 
 
 class Visualizer:
+    """
+    Graphical engine for the drone simulation using Pygame.
+
+    This class handles the rendering of the map, zones, connections, and
+    animated drone movements. It translates the turn-based logic of the
+    Algorithm into a smooth, time-based visual experience.
+
+    Attributes:
+        algo (Algorithm): The algorithm instance containing simulation results.
+        width (int): Screen width in pixels.
+        height (int): Screen height in pixels.
+        screen (pygame.Surface): The main display surface.
+        move_index (int): Current turn being visualized.
+        move_timer (int): Timestamp of the last turn update.
+        move_delay (int): Real-world milliseconds between simulation turns.
+        assets (Dict): Dictionary containing loaded and scaled images.
+        clock (pygame.time.Clock): Pygame clock to manage frame rate.
+    """
     def __init__(self, algo: Algorithm) -> None:
         pygame.init()
         self.algo = algo
@@ -23,6 +41,11 @@ class Visualizer:
         self._optimize_original_moves()
 
     def _optimize_original_moves(self) -> None:
+        """
+        Adjusts move data to account for Restricted Zone delays visually.
+        This ensures that drones entering a Restricted Zone appear to spend
+        two turns in transition as per simulation rules.
+        """
         zones_map = {z.name: z for z in self.algo.data.zones}
         moves = self.algo.moves
         for i in range(1, len(moves)):
@@ -47,12 +70,11 @@ class Visualizer:
                 current_turn.remove(m)
 
     def _spawn_drones_at_start(self) -> None:
-        """Fuerza a todos los drones a posicionarse en la zona de salida."""
+        """Positions all drones at the center of the StartZone initially."""
         start_node = next(
             (z for z in self.algo.data.zones if isinstance(z, StartZone)), None
             )
         if not start_node:
-            print("Error: No se encontró StartZone para el spawn.")
             return
         sx = (
             start_node.x_y[0] * self.tile_size
@@ -68,7 +90,7 @@ class Visualizer:
             d.real_y = sy - d_h
 
     def _setup_grid(self) -> None:
-        """Calcula posiciones lógicas con más margen y centrado real."""
+        """Calculates tile size and offsets to center the map on screen."""
         self.cols = max(z.x_y[0] for z in self.algo.data.zones) + 1
         self.rows = max(z.x_y[1] for z in self.algo.data.zones) + 1
         margen_seguridad = 0.5
@@ -80,6 +102,7 @@ class Visualizer:
         self.off_y = (self.height - (self.rows * self.tile_size)) // 2
 
     def _load(self) -> Dict[str, pygame.Surface]:
+        """Loads and scales all graphical assets."""
         p = os.path.join(os.path.dirname(__file__), "..", "assents")
         size = int(self.tile_size * 0.7)
         b_size = int(self.tile_size * 0.9)
@@ -98,19 +121,21 @@ class Visualizer:
     def _img(
             self, folder: str, name: str, size: Tuple[int, int]
             ) -> pygame.Surface:
+        """Helper to load a single image with error handling."""
         try:
             path = os.path.join(folder, name)
             img = pygame.image.load(path).convert_alpha()
             return pygame.transform.scale(img, size)
         except Exception as e:
-            print(f"Error cargando {name}: {e}")
+            print(f"[Error] img {name}: {e}")
             surf = pygame.Surface(size)
             surf.fill((255, 0, 255))
             return surf
 
     def _draw_connections(self) -> None:
-        color_borde = (30, 30, 30)
-        color_relleno = (120, 120, 120)
+        """Renders the links between zones, adjusting thickness by capacity."""
+        color_bord = (30, 30, 30)
+        color_final = (120, 120, 120)
         zones_by_name = {z.name: z for z in self.algo.data.zones}
         for z in self.algo.data.zones:
             x1 = (
@@ -133,10 +158,10 @@ class Visualizer:
                         neighbor.x_y[1] * self.tile_size
                         ) + self.off_y + (self.tile_size // 2)
                     pygame.draw.line(
-                        self.screen, color_borde, (x1, y1), (x2, y2), ancho + 6
+                        self.screen, color_bord, (x1, y1), (x2, y2), ancho + 6
                         )
                     pygame.draw.line(
-                        self.screen, color_relleno, (x1, y1), (x2, y2), ancho
+                        self.screen, color_final, (x1, y1), (x2, y2), ancho
                         )
 
     def _replace_black_color(
@@ -144,13 +169,14 @@ class Visualizer:
         image: pygame.Surface,
         new_color: Union[pygame.Color, Tuple[int, int, int], str]
     ) -> pygame.Surface:
-        """Crea una silueta nueva usando el color de la zona como relleno."""
+        """Colors a grayscale asset using a provided color."""
         if isinstance(new_color, str):
             return image
         mask = pygame.mask.from_surface(image)
         return mask.to_surface(setcolor=new_color, unsetcolor=(0, 0, 0, 0))
 
     def _draw(self) -> None:
+        """Main draw call: background, connections, zones, and drones."""
         self.screen.blit(self.assets["bg"], (0, 0))
         zones_by_name = {z.name: z for z in self.algo.data.zones}
         self._draw_connections()
@@ -189,6 +215,7 @@ class Visualizer:
         self._draw_drones(zones_by_name)
 
     def _draw_drones(self, zones_by_name: Dict[str, Zone]) -> None:
+        """Renders drones and updates their interpolated positions."""
         for d in self.algo.data.drons:
             if hasattr(d, 'target_pos') and d.travel_t < 1.0:
                 d.travel_t = min(1.0, d.travel_t + getattr(d, 'step', 0.016))
@@ -201,6 +228,9 @@ class Visualizer:
             self.screen.blit(self.assets["dron"], (d.real_x, d.real_y))
 
     def _update_movements(self, zones_by_name: Dict[str, Zone]) -> None:
+        """
+        Checks if enough time has passed to trigger the next turn's movements.
+        """
         now = pygame.time.get_ticks()
         if self.move_index >= len(self.algo.moves)\
                 or now - self.move_timer <= self.move_delay:
@@ -228,6 +258,9 @@ class Visualizer:
         self.move_timer = now
 
     def main_loop(self) -> None:
+        """
+        Main application loop handling events, updates, and rendering.
+        """
         while True:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:

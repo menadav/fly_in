@@ -10,6 +10,10 @@ from enum import Enum
 
 
 class HubColor(Enum):
+    """
+    Enumeration of allowed colors for Zone Hubs in the visual
+    representation.
+    """
     NONE = "none"
     RED = "red"
     BLUE = "blue"
@@ -32,6 +36,10 @@ class HubColor(Enum):
 
 
 class ZoneType(Enum):
+    """
+    Enumeration of zone types that affect drone movement costs and
+    accessibility.
+    """
     NORMAL = "normal"
     BLOCKED = "blocked"
     RESTRICTED = "restricted"
@@ -39,15 +47,42 @@ class ZoneType(Enum):
 
 
 class DronData(ABC, BaseModel):
+    """
+    Abstract base class for all drone-related data structures.
+
+    Attributes:
+        type (str): The category of the data entry (e.g., 'hub', 'connection').
+    """
     type: str
 
     @classmethod
     @abstractmethod
     def parse_line(cls, line: str) -> Optional["DronData"]:
+        """
+        Parse a raw string line into a DronData object.
+
+        Args:
+            line: A string containing the raw data from the input file.
+
+        Returns:
+            An instance of a subclass of DronData, or None if parsing fails.
+        """
         pass
 
 
 class ZoneHub(DronData):
+    """
+    Data model representing a physical zone or hub in the network.
+
+    Attributes:
+        name (str): Unique identifier for the zone.
+        x (int): Horizontal coordinate on the map.
+        y (int): Vertical coordinate on the map.
+        zone (ZoneType): The type of zone determining movement rules.
+        color (HubColor): The visual color assigned to the hub.
+        max_drones (int): Maximum number of drones
+        allowed in this zone simultaneously.
+    """
     name: str
     x: int
     y: int
@@ -129,6 +164,15 @@ class ZoneHub(DronData):
 
 
 class ZoneConnection(DronData):
+    """
+    Data model representing a bidirectional link between two zones.
+
+    Attributes:
+        name1 (str): The name of the first zone in the connection.
+        name2 (str): The name of the second zone in the connection.
+        max_link_capacity (int): Max drones that can traverse
+        this link at once.
+    """
     name1: str
     name2: str
     max_link_capacity: int = Field(default=1, gt=0)

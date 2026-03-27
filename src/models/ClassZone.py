@@ -7,6 +7,12 @@ if TYPE_CHECKING:
 
 
 class Zone(ABC):
+    """
+    Abstract base class representing a physical area in the network.
+
+    Defines the interface for movement costs and capacity management that
+    specific zone types must implement.
+    """
     def __init__(
             self, typ: ZoneType, name: str, x_y: tuple[int, int],
             color: str, max_drones: int
@@ -22,16 +28,13 @@ class Zone(ABC):
 
     @abstractmethod
     def get_movement_cost(self) -> float:
+        """Calculates the cost in turns to enter this zone."""
         pass
 
     @abstractmethod
     def has_capacity(self) -> bool:
+        """Checks if a drone can currently enter the zone."""
         pass
-
-    def get_screen_coords(self, tile_size: int = 60) -> tuple[int, int]:
-        screen_x = self.x_y[0] * tile_size
-        screen_y = self.x_y[1] * tile_size
-        return (screen_x, screen_y)
 
 
 class NormalZone(Zone):
@@ -54,6 +57,7 @@ class StartZone(NormalZone):
         self.role = "START"
 
     def has_capacity(self) -> bool:
+        """Start zones never block drones from starting."""
         return True
 
 
@@ -66,6 +70,7 @@ class EndZone(NormalZone):
         self.role = "END"
 
     def has_capacity(self) -> bool:
+        """END zones never block drones from starting."""
         return True
 
 
