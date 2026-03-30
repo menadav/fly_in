@@ -42,7 +42,7 @@ class NormalZone(Zone):
     def get_movement_cost(self) -> float:
         flow = len(self.current_drones) + len(self.reserved_zone)
         cost = flow / self.max_drones
-        return 1 + (cost ** 4)
+        return 1 + (cost ** 2)
 
     def has_capacity(self) -> bool:
         return len(self.current_drones) < self.max_drones
@@ -79,7 +79,7 @@ class PriorityZone(Zone):
     def get_movement_cost(self) -> float:
         flow = len(self.current_drones) + len(self.reserved_zone)
         cost = flow / self.max_drones
-        return 1 + (cost ** 4)
+        return 1 + (cost ** 2)
 
     def has_capacity(self) -> bool:
         return len(self.current_drones) < self.max_drones
@@ -90,7 +90,7 @@ class RestrictedZone(Zone):
     def get_movement_cost(self) -> float:
         flow = len(self.current_drones) + len(self.reserved_zone)
         cost = flow / self.max_drones
-        return 2 + (cost ** 4)
+        return 2 + (cost ** 2)
 
     def has_capacity(self) -> bool:
         return len(self.current_drones) < self.max_drones

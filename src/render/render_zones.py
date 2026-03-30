@@ -5,6 +5,7 @@ from src.models.ClassZone import StartZone, EndZone, PriorityZone, \
         RestrictedZone, BlockedZone, Zone
 from src.render.color import ColorPalette as col
 from src.algo.dijks_algo import Algorithm
+from src.models.ZoneConfig import ZoneType
 
 
 class Visualizer:
@@ -59,15 +60,19 @@ class Visualizer:
                 dron_id = parts[0]
                 zone_name = parts[1]
                 zone_obj = zones_map.get(zone_name)
-                if isinstance(zone_obj, RestrictedZone):
+                is_restricted = isinstance(
+                    zone_obj, RestrictedZone
+                    ) or getattr(zone_obj, 'typ', None) == ZoneType.RESTRICTED
+                if is_restricted:
                     dron_ocupado_antes = any(
                         m.startswith(f"{dron_id}-") for m in previous_turn
                         )
                     if not dron_ocupado_antes:
-                        to_move_back.append(move_str)
-            for m in to_move_back:
+                        to_move_back.append((move_str, zone_obj))
+            for m, z_obj in to_move_back:
                 previous_turn.append(m)
-                current_turn.remove(m)
+                if not isinstance(z_obj, EndZone):
+                    current_turn.remove(m)
 
     def _spawn_drones_at_start(self) -> None:
         """Positions all drones at the center of the StartZone initially."""
@@ -77,10 +82,10 @@ class Visualizer:
         if not start_node:
             return
         sx = (
-            start_node.x_y[0] * self.tile_size
+            (start_node.x_y[0] - self.min_x) * self.tile_size
             ) + self.off_x + (self.tile_size // 2)
         sy = (
-            start_node.x_y[1] * self.tile_size
+            (start_node.x_y[1] - self.min_y) * self.tile_size
             ) + self.off_y + (self.tile_size // 2)
         d_w = self.assets["dron"].get_width() // 2
         d_h = self.assets["dron"].get_height() // 2
@@ -90,9 +95,16 @@ class Visualizer:
             d.real_y = sy - d_h
 
     def _setup_grid(self) -> None:
-        """Calculates tile size and offsets to center the map on screen."""
-        self.cols = max(z.x_y[0] for z in self.algo.data.zones) + 1
-        self.rows = max(z.x_y[1] for z in self.algo.data.zones) + 1
+        """
+        Calculates tile size and offsets to center the map,
+        supporting negative coordinates.
+        """
+        all_x = [z.x_y[0] for z in self.algo.data.zones]
+        all_y = [z.x_y[1] for z in self.algo.data.zones]
+        self.min_x, self.max_x = min(all_x), max(all_x)
+        self.min_y, self.max_y = min(all_y), max(all_y)
+        self.cols = self.max_x - self.min_x + 1
+        self.rows = self.max_y - self.min_y + 1
         margen_seguridad = 0.5
         self.tile_size = int(min(
             (self.width * margen_seguridad) // self.cols,
@@ -139,10 +151,10 @@ class Visualizer:
         zones_by_name = {z.name: z for z in self.algo.data.zones}
         for z in self.algo.data.zones:
             x1 = (
-                z.x_y[0] * self.tile_size
+                (z.x_y[0] - self.min_x) * self.tile_size
                 ) + self.off_x + (self.tile_size // 2)
             y1 = (
-                z.x_y[1] * self.tile_size
+                (z.x_y[1] - self.min_y) * self.tile_size
                 ) + self.off_y + (self.tile_size // 2)
             for conn in z.connection:
                 base_gordo = self.tile_size * 0.15
@@ -152,10 +164,10 @@ class Visualizer:
                 neighbor = zones_by_name.get(neighbor_name)
                 if neighbor:
                     x2 = (
-                        neighbor.x_y[0] * self.tile_size
+                        (neighbor.x_y[0] - self.min_x) * self.tile_size
                         ) + self.off_x + (self.tile_size // 2)
                     y2 = (
-                        neighbor.x_y[1] * self.tile_size
+                        (neighbor.x_y[1] - self.min_y) * self.tile_size
                         ) + self.off_y + (self.tile_size // 2)
                     pygame.draw.line(
                         self.screen, color_bord, (x1, y1), (x2, y2), ancho + 6
@@ -181,8 +193,8 @@ class Visualizer:
         zones_by_name = {z.name: z for z in self.algo.data.zones}
         self._draw_connections()
         for z in self.algo.data.zones:
-            zx = (z.x_y[0] * self.tile_size) + self.off_x
-            zy = (z.x_y[1] * self.tile_size) + self.off_y
+            zx = ((z.x_y[0] - self.min_x) * self.tile_size) + self.off_x
+            zy = ((z.x_y[1] - self.min_y) * self.tile_size) + self.off_y
             if isinstance(z, StartZone):
                 img = self.assets["start"]
             elif isinstance(z, EndZone):
@@ -232,9 +244,20 @@ class Visualizer:
         Checks if enough time has passed to trigger the next turn's movements.
         """
         now = pygame.time.get_ticks()
-        if self.move_index >= len(self.algo.moves)\
-                or now - self.move_timer <= self.move_delay:
+        if self.move_index >= len(self.algo.moves):
+            if not getattr(self, 'sim_finished', False):
+                print("")
+                self.sim_finished = True
             return
+        if now - self.move_timer <= self.move_delay:
+            return
+        current_moves = self.algo.moves[self.move_index]
+        print(f"\nTurn {self.move_index + 1}-", end=" ")
+        if not current_moves:
+            pass
+        else:
+            for m_str in current_moves:
+                print(f"{m_str}", end=" ")
         for move_str in self.algo.moves[self.move_index]:
             d_id, z_name = move_str.split("-")
             targets = [dr for dr in self.algo.data.drons
@@ -243,13 +266,23 @@ class Visualizer:
                 tz = zones_by_name.get(z_name)
                 if tz:
                     d.origin_pos = (d.real_x, d.real_y)
-                    f = 2.0 if isinstance(tz, RestrictedZone) else 1.0
+                    is_slow = isinstance(tz, RestrictedZone)\
+                        or (
+                            isinstance(
+                                tz, EndZone
+                                ) and tz.typ == ZoneType.RESTRICTED
+                            )
+                    f = 2.0 if is_slow else 1.0
                     d.step = (1000 / 60) / (self.move_delay * f)
                     d.target_pos = (
-                        (tz.x_y[0] * self.tile_size) + self.off_x + (
+                        ((
+                            tz.x_y[0] - self.min_x
+                            ) * self.tile_size) + self.off_x + (
                             self.tile_size // 2
                             ) - (self.assets["dron"].get_width() // 2),
-                        (tz.x_y[1] * self.tile_size) + self.off_y + (
+                        ((
+                            tz.x_y[1] - self.min_y
+                            ) * self.tile_size) + self.off_y + (
                             self.tile_size // 2
                             ) - (self.assets["dron"].get_height() // 2)
                     )
@@ -261,12 +294,16 @@ class Visualizer:
         """
         Main application loop handling events, updates, and rendering.
         """
-        while True:
+        running = True
+        while running:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
-                    return
+                    running = False
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_ESCAPE or e.key == pygame.K_q:
+                        running = False
             zones_by_name = {z.name: z for z in self.algo.data.zones}
             self._update_movements(zones_by_name)
             self._draw()
             pygame.display.flip()
-            self.clock.tick(60)
+            self.clock.tick(70)

@@ -99,12 +99,12 @@ class ZoneHub(DronData):
             metadata = re.findall(r"\[(.*)\]", rest)
             if len(metadata) > 1:
                 raise ValueError(
-                    f"[ERROR] There are 2 or more Metadatas {line}"
+                    f"[ERROR] There are 2 or more Metadatas\n{line}"
                     )
             clean_rest = re.sub(r"\[(.*)]", "", rest).strip()
             name_x_y = clean_rest.split()
             if len(name_x_y) != 3:
-                raise ValueError(f"[ERROR] Arguments are missing. {line}")
+                raise ValueError(f"[ERROR] Arguments are missing.\n{line}")
             data: dict[str, Any] = {
                 "type": z_type,
                 "name": name_x_y[0],
@@ -124,27 +124,27 @@ class ZoneHub(DronData):
                 for pair in pairs:
                     pair = pair.strip()
                     if '=' not in pair:
-                        raise ValueError(f"[ERROR] Incorrect Metadata {line}")
+                        raise ValueError(f"[ERROR] Incorrect Metadata\n{line}")
                     key, value = [p.strip() for p in pair.split("=", 1)]
                     if key == "zone":
                         if check_zone:
-                            raise ValueError(f"[ERROR] Color is repit {line}")
+                            raise ValueError(f"[ERROR] Color is repit\n{line}")
                         data["zone"] = ZoneType(value.lower())
                         check_zone = True
                     elif key == "color":
                         if check_color:
-                            raise ValueError(f"[ERROR] Color is repit {line}")
+                            raise ValueError(f"[ERROR] Color is repit\n{line}")
                         data["color"] = HubColor(value.lower())
                         check_color = True
                     elif key == "max_drones":
                         if check_drones:
                             raise ValueError(
-                                f"[ERROR] Max_drones is repit {line}"
+                                f"[ERROR] Max_drones is repit\n{line}"
                                 )
                         data["max_drones"] = int(value)
                         check_drones = True
                     else:
-                        raise ValueError(f"[ERROR] Unknowed metadata {line}")
+                        raise ValueError(f"[ERROR] Unknowed metadata\n{line}")
             return cls(
                 type=str(data["type"]),
                 name=str(data["name"]),
@@ -157,10 +157,10 @@ class ZoneHub(DronData):
         except Exception as e:
             error_msg = str(e)
             if "Zone" in error_msg:
-                raise ValueError(f"[ERROR] Invalid zone type: {line}")
+                raise ValueError(f"[ERROR] Invalid zone type:\n{line}")
             elif "Color" in error_msg:
-                raise ValueError(f"[ERROR] Unrecognized color: {line}")
-            raise ValueError(f"[CRITICAL] ERROR DATA ZoneHub {e}")
+                raise ValueError(f"[ERROR] Unrecognized color:\n{line}")
+            raise ValueError(f"{e}")
 
 
 class ZoneConnection(DronData):
@@ -186,12 +186,12 @@ class ZoneConnection(DronData):
             metadata = re.findall(r"\[(.*)\]", rest)
             if len(metadata) > 1:
                 raise ValueError(
-                    f"[ERROR] There are 2 or more Metadatas {line}"
+                    f"[ERROR] There are 2 or more Metadatas\n{line}"
                     )
             clean_rest = re.sub(r"\[(.*)]", "", rest).strip()
             names = clean_rest.split('-')
             if len(names) != 2:
-                raise ValueError(f"[ERROR] Incorrect number names {line}")
+                raise ValueError(f"[ERROR] Incorrect number names\n{line}")
             conn_data: dict[str, Any] = {
                 "type": z_type,
                 "name1": names[0].strip(),
