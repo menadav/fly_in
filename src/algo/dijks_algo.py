@@ -207,5 +207,3 @@ class Algorithm:
                     pass
             i += 1
             self.moves.append(moves)
-            print(f"Turn {i}- ", end="")
-            print(" ".join(moves))

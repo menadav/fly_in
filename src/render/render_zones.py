@@ -1,11 +1,13 @@
-import pygame
 import os
+import src.env_config
 from typing import Dict, Tuple, Union
 from src.models.ClassZone import StartZone, EndZone, PriorityZone, \
         RestrictedZone, BlockedZone, Zone
 from src.render.color import ColorPalette as col
 from src.algo.dijks_algo import Algorithm
 from src.models.ZoneConfig import ZoneType
+import pygame
+_ = src.env_config
 
 
 class Visualizer:
@@ -28,6 +30,7 @@ class Visualizer:
         clock (pygame.time.Clock): Pygame clock to manage frame rate.
     """
     def __init__(self, algo: Algorithm) -> None:
+
         pygame.init()
         self.algo = algo
         self.width, self.height = 2400, 1400
@@ -37,6 +40,7 @@ class Visualizer:
         self.move_timer = 0
         self.move_delay = 1000
         self.assets = self._load()
+        self.first_moves = [list(turn) for turn in self.algo.moves]
         self.clock = pygame.time.Clock()
         self._spawn_drones_at_start()
         self._optimize_original_moves()
@@ -70,9 +74,10 @@ class Visualizer:
                     if not dron_ocupado_antes:
                         to_move_back.append((move_str, zone_obj))
             for m, z_obj in to_move_back:
-                previous_turn.append(m)
                 if not isinstance(z_obj, EndZone):
-                    current_turn.remove(m)
+                    pass
+                previous_turn.append(m)
+                current_turn.remove(m)
 
     def _spawn_drones_at_start(self) -> None:
         """Positions all drones at the center of the StartZone initially."""
@@ -251,7 +256,7 @@ class Visualizer:
             return
         if now - self.move_timer <= self.move_delay:
             return
-        current_moves = self.algo.moves[self.move_index]
+        current_moves = self.first_moves[self.move_index]
         print(f"\nTurn {self.move_index + 1}-", end=" ")
         if not current_moves:
             pass

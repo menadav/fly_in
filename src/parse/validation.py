@@ -22,7 +22,7 @@ def validation_data(file_path: str) -> List[ParsedData]:
         ValueError: If the file format is incorrect, missing required elements,
                     or contains invalid data.
     """
-    zone_list: List[ParsedData] = []
+    zone_list: List[Tuple[ParsedData, str]] = []
     has_nb_drones = False
     try:
         with open(file_path, 'r', encoding="utf-8") as f:
@@ -67,7 +67,7 @@ def validation_data(file_path: str) -> List[ParsedData]:
         raise ValueError(f"[ERROR] {e}")
 
 
-def check_zone(zones: Tuple[List[ParsedData], str]) -> None:
+def check_zone(zones: List[Tuple[ParsedData, str]]) -> None:
     """
     Verifies the logical integrity of the parsed map data.
 
