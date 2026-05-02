@@ -63,9 +63,3 @@ python3 -m fly_in <file>
 	The choice of [Pygame / Terminal Colors] was made to provide an intuitive understanding of the drone fleet’s behavior.
 	Real-time Feedback: It allows peers to verify that drones correctly occupy connections toward restricted zones for exactly 2 turns.
 	State Monitoring: Visual cues make it easy to see when a zone is at maximum capacity or when a drone is waiting.
-
-
-### Resources
-	- https://es.wikibooks.org/wiki/Algoritmia/Algoritmo_de_Dijkstra
-	- https://www.youtube.com/watch?v=UFZN0NmY1jQ
-	- IA
